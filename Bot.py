@@ -44,6 +44,8 @@ async def stats(ctx, user=None):
     # Count status of submissions
     for i in range(len(keys)):
         status = user_submissions[keys[i]]["result"]
+        if status is None:
+            continue
         if status in results_count:
             results_count[status] += 1
         else:
