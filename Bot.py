@@ -11,10 +11,16 @@ async def on_read():
     await bot.change_presence(activity=discord.Game(name="%submissions"))
 
 @bot.command()
-async def submissions(ctx, user="bartpuup", num=1):
+async def submissions(ctx, user=None, num=1):
+    if user is None:
+        await ctx.channel.send("No user is given")
+        return
     try:
         user_submissions = requests.get("https://dmoj.ca/api/user/submissions/" + user).json()
         keys = list(user_submissions.keys())
+        if num > 10:
+            await ctx.channel.send("You can only get a maximum of 10 problems")
+            return
         for i in range(1, num+1):
             status = user_submissions[keys[-i]]['result']
             problem = requests.get("https://dmoj.ca/api/problem/info/" + user_submissions[keys[-i]]['problem']).json()["name"]
