@@ -9,7 +9,7 @@ bot = commands.Bot(command_prefix=prefix, help_command=None)
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(activity=discord.Game(name="%help"))
+    await bot.change_presence(activity=discord.Game(name="$help"))
 
 
 @bot.command()
