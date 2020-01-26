@@ -102,4 +102,29 @@ async def submissions(ctx, user=None, num=1):
             await ctx.channel.send(user + " FUCKING " + status + "'d on " + problem_name + " worth "
             + str(problem_points) + " points LMAOOOOOO <:PepeLaugh:594138680898355200>\nLink: " + problem_link)
 
+
+previous_contests = requests.get("https://dmoj.ca/api/contest/list").json()
+previous_keys = list(previous_contests.keys())
+@bot.command()
+async def contests(ctx):
+    contests = None
+    try:
+        contests = requests.get("https://dmoj.ca/api/contest/list").json()
+    except:
+        await ctx.channel.send("Error getting contests")
+        return
+    keys = list(contests.keys())
+    new_contests_keys = list(set(previous_keys) ^ set(keys))
+    if len(new_contests_keys) == 0:
+        await ctx.channel.send("No new contests")
+    else:
+        for i in range(len(new_contests_keys)):
+            embed_contests = discord.Embed(
+                title=contests[new_contests_keys[i]]["name"],
+                colour=discord.Colour.gold(),
+                url="https://dmoj.ca/contest/" + new_contests_keys[i]
+            )
+            await ctx.channel.send(embed=embed_contests)
+
+
 bot.run(api_key)
