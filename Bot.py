@@ -52,7 +52,7 @@ async def stats(ctx, user=None):
             results_count[status] = 1
     # Embedded output
     output_stats = discord.Embed(
-        title=f"AC rate: {round(results_count["AC"]/len(keys), 2)*100}%",
+        title=f"AC rate: {round(results_count['AC'] / len(keys), 2) * 100}%",
         colour=discord.Colour.gold(),
         description=f"Total submissions: {len(keys)}",
         url=f"https://dmoj.ca/user/{user}"
@@ -87,7 +87,7 @@ async def submissions(ctx, user=None, num=1):
     if num > 10:
         await ctx.channel.send("You can only get a maximum of 10 problems")
         return
-    for i in range(1, num+1):
+    for i in range(1, num + 1):
         status = user_submissions[keys[-i]]['result']
         # Get problem details and convert to dict
         problem = requests.get(f"https://dmoj.ca/api/problem/info/{user_submissions[keys[-i]]['problem']}").json()
@@ -96,8 +96,11 @@ async def submissions(ctx, user=None, num=1):
         problem_points = problem["points"]
         problem_link = f"https://dmoj.ca/problem/{user_submissions[keys[-i]]['problem']}"
         if status == "AC":
-            await ctx.channel.send(f"{user} AC'd on {problem_name} worth {problem_points} points HOLY SHIT <:PogU:594138006999269427>\nLink: {problem_link}")
+            await ctx.channel.send(f"{user} AC'd on {problem_name} worth {problem_points} points HOLY SHIT "
+                                   f"<:PogU:594138006999269427>\nLink: {problem_link}")
         else:
-            await ctx.channel.send(f"{user} FUCKING {status}'d on {problem_name} worth {problem_points} points LMAOOOOOO <:PepeLaugh:594138680898355200>\nLink: {problem_link}")
+            await ctx.channel.send(f"{user} FUCKING {status}'d on {problem_name} worth {problem_points} points "
+                                   f"LMAOOOOOO <:PepeLaugh:594138680898355200>\nLink: {problem_link}")
+
 
 bot.run(api_key)
