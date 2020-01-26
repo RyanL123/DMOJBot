@@ -33,8 +33,8 @@ async def stats(ctx, user=None):
     user_info = None
     # Attempts to get user submissions
     try:
-        user_submissions = requests.get("https://dmoj.ca/api/user/submissions/" + user).json()
-        user_info = requests.get("https://dmoj.ca/api/user/info/" + user).json()
+        user_submissions = requests.get(f"https://dmoj.ca/api/user/submissions/{user}").json()
+        user_info = requests.get(f"https://dmoj.ca/api/user/info/{user}").json()
     except:
         await ctx.channel.send("That user does not exist")
         return
@@ -52,17 +52,17 @@ async def stats(ctx, user=None):
             results_count[status] = 1
     # Embedded output
     output_stats = discord.Embed(
-        title="AC rate: " + str(round(results_count["AC"]/len(keys), 2)*100) + "%",
+        title=f"AC rate: {round(results_count['AC'] / len(keys), 2) * 100}%",
         colour=discord.Colour.gold(),
-        description="Total submissions: " + str(len(keys)),
-        url="https://dmoj.ca/user/" + user
+        description=f"Total submissions: {len(keys)}",
+        url=f"https://dmoj.ca/user/{user}"
     )
     output_stats.add_field(name="Rating", value=str(user_info["contests"]["current_rating"]), inline=True)
     output_stats.add_field(name="Points", value=str(int(user_info["performance_points"])), inline=True)
     output_stats.add_field(name="Solved Problems", value=str(len(user_info["solved_problems"])), inline=True)
     for i in sorted(results_count.keys()):
         output_stats.add_field(name=i, value=str(results_count[i]), inline=True)
-    output_stats.set_author(name="Stats for " + user)
+    output_stats.set_author(name=f"Stats for {user}")
     await ctx.channel.send(embed=output_stats)
 
 
@@ -77,7 +77,7 @@ async def submissions(ctx, user=None, num=1):
     user_submissions = None
     # Attempts to get user submissions
     try:
-        user_submissions = requests.get("https://dmoj.ca/api/user/submissions/" + user).json()
+        user_submissions = requests.get(f"https://dmoj.ca/api/user/submissions/{user}").json()
     except:
         await ctx.channel.send("That user does not exist")
         return
@@ -87,19 +87,20 @@ async def submissions(ctx, user=None, num=1):
     if num > 10:
         await ctx.channel.send("You can only get a maximum of 10 problems")
         return
-    for i in range(1, num+1):
+    for i in range(1, num + 1):
         status = user_submissions[keys[-i]]['result']
         # Get problem details and convert to dict
-        problem = requests.get("https://dmoj.ca/api/problem/info/" + user_submissions[keys[-i]]['problem']).json()
+        problem = requests.get(f"https://dmoj.ca/api/problem/info/{user_submissions[keys[-i]]['problem']}").json()
         # Get specific info
         problem_name = problem["name"]
         problem_points = problem["points"]
-        problem_link = "https://dmoj.ca/problem/" + user_submissions[keys[-i]]['problem']
+        problem_link = f"https://dmoj.ca/problem/{user_submissions[keys[-i]]['problem']}"
         if status == "AC":
-            await ctx.channel.send(user + " AC'd on " + problem_name + " worth "
-            + str(problem_points) + " points HOLY SHIT <:PogU:594138006999269427>\nLink: " + problem_link)
+            await ctx.channel.send(f"{user} AC'd on {problem_name} worth {problem_points} points HOLY SHIT "
+                                   f"<:PogU:594138006999269427>\nLink: {problem_link}")
         else:
-            await ctx.channel.send(user + " FUCKING " + status + "'d on " + problem_name + " worth "
-            + str(problem_points) + " points LMAOOOOOO <:PepeLaugh:594138680898355200>\nLink: " + problem_link)
+            await ctx.channel.send(f"{user} FUCKING {status}'d on {problem_name} worth {problem_points} points "
+                                   f"LMAOOOOOO <:PepeLaugh:594138680898355200>\nLink: {problem_link}")
+
 
 bot.run(api_key)
