@@ -12,6 +12,13 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name="$help"))
 
 
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.channel.send(f'This command is on a {error.retry_after:.2f} cooldown')
+
+
+@commands.cooldown(1, 5, commands.BucketType.user)
 @bot.command()
 async def help(ctx):
     output_message = discord.Embed(
@@ -23,6 +30,7 @@ async def help(ctx):
     await ctx.channel.send(embed=output_message)
 
 
+@commands.cooldown(1, 5, commands.BucketType.user)
 @bot.command()
 async def stats(ctx, user=None):
     # No user is given
@@ -66,6 +74,7 @@ async def stats(ctx, user=None):
     await ctx.channel.send(embed=output_stats)
 
 
+@commands.cooldown(1, 5, commands.BucketType.user)
 @bot.command()
 async def submissions(ctx, user=None, num=1):
     # No user is given
@@ -103,29 +112,29 @@ async def submissions(ctx, user=None, num=1):
                                    f"LMAOOOOOO <:PepeLaugh:594138680898355200>\nLink: {problem_link}")
 
 
-
-previous_contests = requests.get("https://dmoj.ca/api/contest/list").json()
-previous_keys = list(previous_contests.keys())
-@bot.command()
-async def contests(ctx):
-    contests = None
-    try:
-        contests = requests.get("https://dmoj.ca/api/contest/list").json()
-    except:
-        await ctx.channel.send("Error getting contests")
-        return
-    keys = list(contests.keys())
-    new_contests_keys = list(set(previous_keys) ^ set(keys))
-    if len(new_contests_keys) == 0:
-        await ctx.channel.send("No new contests")
-    else:
-        for i in range(len(new_contests_keys)):
-            embed_contests = discord.Embed(
-                title=contests[new_contests_keys[i]]["name"],
-                colour=discord.Colour.gold(),
-                url="https://dmoj.ca/contest/" + new_contests_keys[i]
-            )
-            await ctx.channel.send(embed=embed_contests)
+# Passively get contests, right now implemented as a command
+# previous_contests = requests.get("https://dmoj.ca/api/contest/list").json()
+# previous_keys = list(previous_contests.keys())
+# @bot.command()
+# async def contests(ctx):
+#     contests = None
+#     try:
+#         contests = requests.get("https://dmoj.ca/api/contest/list").json()
+#     except:
+#         await ctx.channel.send("Error getting contests")
+#         return
+#     keys = list(contests.keys())
+#     new_contests_keys = list(set(previous_keys) ^ set(keys))
+#     if len(new_contests_keys) == 0:
+#         await ctx.channel.send("No new contests")
+#     else:
+#         for i in range(len(new_contests_keys)):
+#             embed_contests = discord.Embed(
+#                 title=contests[new_contests_keys[i]]["name"],
+#                 colour=discord.Colour.gold(),
+#                 url="https://dmoj.ca/contest/" + new_contests_keys[i]
+#             )
+#             await ctx.channel.send(embed=embed_contests)
 
 
 bot.run(api_key)
