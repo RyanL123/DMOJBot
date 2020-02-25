@@ -39,6 +39,7 @@ async def stats(ctx, user=None):
         return
     if user == "Bartpuup" or user == "bartpuup":
         await ctx.channel.send("Bert got 75% on a grade 11 math test lmaoooooo")
+        return
     user_submissions = None
     user_info = None
     # Attempts to get user submissions
@@ -84,6 +85,9 @@ async def submissions(ctx, user=None, num=1):
         await ctx.channel.send(">>> **Parameters** (User, Amount)\n" +
                                "**User**: Name of the user on DMOJ\n" +
                                "**Amount: ** Amount of submissions to get")
+        return
+    if user == "Bartpuup" or user == "bartpuup":
+        await ctx.channel.send("Bert got 75% on a grade 11 math test lmaoooooo")
         return
     user_submissions = None
     # Attempts to get user submissions
