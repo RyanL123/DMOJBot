@@ -37,7 +37,7 @@ async def stats(ctx, user=None):
     if user is None:
         await ctx.channel.send(">>> **Parameters** (User)\n**User**: Name of the user on DMOJ")
         return
-    if user == "Bartpuup":
+    if user == "Bartpuup" or user == "bartpuup":
         await ctx.channel.send("Bert got 75% on a grade 11 math test lmaoooooo")
     user_submissions = None
     user_info = None
