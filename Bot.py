@@ -25,13 +25,10 @@ def get_problem_info(problem):
     return problem_info
 
 
-# def error_handler(function):
-
-
-
 @bot.event
 async def on_ready():
     await bot.change_presence(activity=discord.Game(name="$help"))
+    new_contests.start()
 
 
 @bot.event
@@ -149,11 +146,12 @@ async def contests(ctx, channel_id=""):
         await ctx.channel.send("Sorry, that channel does not exist")
 
 
-# Passively get contests, right now implemented as a command
 previous_contests = requests.get("https://dmoj.ca/api/contest/list").json()
 previous_keys = list(previous_contests.keys())
-@bot.command()
-async def new_contests(ctx):
+
+
+@tasks.loop(hours=8)
+async def new_contests():
     # Channel not configured
     if channel is None:
         return
@@ -163,13 +161,10 @@ async def new_contests(ctx):
     try:
         current_contests = requests.get("https://dmoj.ca/api/contest/list").json()
     except:
-        await ctx.channel.send("Error getting contests")
+        await bot.get_channel(channel).send("Error getting contests")
         return
     current_keys = list(current_contests.keys())
-    # Compares updated contests with previous contests
-    if len(current_keys)-len(previous_keys) == 0:
-        await bot.get_channel(channel).send("No new contests")
-    else:
+    if len(current_keys) - len(previous_keys) != 0:
         for i in range(1, len(current_keys)-len(previous_keys)):
             embed_contests = discord.Embed(
                 title=current_contests[current_keys[-i]]["name"],
