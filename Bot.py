@@ -117,30 +117,56 @@ async def submissions(ctx, user=None, num=1):
             await ctx.channel.send(f"{user} FUCKING {status}'d on {problem_name} worth {problem_points} points "
                                    f"LMAOOOOOO <:PepeLaugh:594138680898355200>\nLink: {problem_link}")
 
+channel = None
+@commands.cooldown(1, 5, commands.BucketType.user)
+@bot.command()
+async def contests(ctx, channel_id=""):
+    if channel_id == "":
+        await ctx.channel.send(">>> **Parameters** (Channel)\n**Channel**: Channel ID of the channel where you want" +
+                               "the reminders to be sent")
+        return
+    global channel
+    try:
+        channel = int(channel_id[2:-1])
+        await ctx.channel.send("Reminders of DMOJ contests will now be sent in " + channel_id)
+    except:
+        await ctx.channel.send("Sorry, that channel does not exist")
+
 
 # Passively get contests, right now implemented as a command
-# previous_contests = requests.get("https://dmoj.ca/api/contest/list").json()
-# previous_keys = list(previous_contests.keys())
-# @bot.command()
-# async def contests(ctx):
-#     contests = None
-#     try:
-#         contests = requests.get("https://dmoj.ca/api/contest/list").json()
-#     except:
-#         await ctx.channel.send("Error getting contests")
-#         return
-#     keys = list(contests.keys())
-#     new_contests_keys = list(set(previous_keys) ^ set(keys))
-#     if len(new_contests_keys) == 0:
-#         await ctx.channel.send("No new contests")
-#     else:
-#         for i in range(len(new_contests_keys)):
-#             embed_contests = discord.Embed(
-#                 title=contests[new_contests_keys[i]]["name"],
-#                 colour=discord.Colour.gold(),
-#                 url="https://dmoj.ca/contest/" + new_contests_keys[i]
-#             )
-#             await ctx.channel.send(embed=embed_contests)
+previous_contests = requests.get("https://dmoj.ca/api/contest/list").json()
+previous_keys = list(previous_contests.keys())
+@bot.command()
+async def new_contests(ctx):
+    # Channel not configured
+    if channel is None:
+        return
+    global previous_contests
+    global previous_keys
+    current_contests = None
+    try:
+        current_contests = requests.get("https://dmoj.ca/api/contest/list").json()
+    except:
+        await ctx.channel.send("Error getting contests")
+        return
+    current_keys = list(current_contests.keys())
+    # Compares updated contests with previous contests
+    if len(current_keys)-len(previous_keys) == 0:
+        await bot.get_channel(channel).send("No new contests")
+    else:
+        for i in range(1, len(current_keys)-len(previous_keys)):
+            embed_contests = discord.Embed(
+                title=current_contests[current_keys[-i]]["name"],
+                colour=discord.Colour.gold(),
+                url="https://dmoj.ca/contest/" + current_keys[-i]
+            )
+            embed_contests.add_field(name="Start Time", value=current_contests[current_keys[-i]]["start_time"], inline=False)
+            embed_contests.add_field(name="End Time", value=current_contests[current_keys[-i]]["end_time"], inline=False)
+            embed_contests.add_field(name="Time Limit", value=current_contests[current_keys[-i]]["time_limit"], inline=False)
+            embed_contests.set_author(name="New contest")
+            await bot.get_channel(channel).send(embed=embed_contests)
+        previous_contests = current_contests
+        previous_keys = current_keys
 
 
 bot.run(api_key)
