@@ -15,12 +15,15 @@ def get_user_stats_json(user):
     return requests.get(f"https://dmoj.ca/api/user/info/{user}").json()
 
 
-def get_problem_info(problem):
-    problem_json = requests.get(f"https://dmoj.ca/api/problem/info/{problem}").json()
+def get_submission_info(submission_id):
+    problem_name = submission_id["problem"]
+    problem_json = requests.get(f"https://dmoj.ca/api/problem/info/{problem_name}").json()
     problem_info = {
-        "name": problem_json["name"],
+        "name": problem_name,
         "points": problem_json["points"],
-        "link": f"https://dmoj.ca/problem/{problem}"
+        "link": f"https://dmoj.ca/problem/{problem_name}",
+        "status": submission_id["result"],
+        "obtained_points": submission_id["points"]
     }
     return problem_info
 
@@ -116,18 +119,18 @@ async def submissions(ctx, user=None, num=1):
         return
     keys = list(user_submissions.keys())
     problem = user_submissions[keys[-num]]
-    status = problem['result']
 
-    problem_info = get_problem_info(problem['problem'])
+    problem_info = get_submission_info(problem)
     problem_name = problem_info["name"]
     problem_points = problem_info["points"]
     problem_link = problem_info["link"]
+    problem_status = problem_info["status"]
 
-    if status == "AC":
+    if problem_status == "AC":
         await ctx.channel.send(f"{user} AC'd on {problem_name} worth {problem_points} points HOLY SHIT "
                                f"<:PogU:594138006999269427>\nLink: {problem_link}")
     else:
-        await ctx.channel.send(f"{user} FUCKING {status}'d on {problem_name} worth {problem_points} points "
+        await ctx.channel.send(f"{user} FUCKING {problem_status}'d on {problem_name} worth {problem_points} points "
                                f"LMAOOOOOO <:PepeLaugh:594138680898355200>\nLink: {problem_link}")
 
 channel = None
@@ -178,6 +181,41 @@ async def new_contests():
             await bot.get_channel(channel).send(embed=embed_contests)
         previous_contests = current_contests
         previous_keys = current_keys
+
+
+# TODO
+# Correctly determine winner based on submission time
+# Generate list rankings: 1st, 2nd, etc
+@bot.command()
+async def race(ctx, problem, time, *users):
+    users_list = " ".join(users)
+
+
+async def compare_submissions(problem, users):
+    winner = None
+    winner_score = 0
+    winner_submission_time = None
+
+    for i in range(len(users)):
+        user_submissions = get_submissions_json(users[i])
+        submissions_keys = list(user_submissions.keys())
+        for j in range(1, len(submissions_keys)+1):
+            submission_id = user_submissions[submissions_keys[-j]]
+            status = submission_id["result"]
+            name = submission_id["problem"]
+            score = submission_id["points"]
+            if problem == name:
+                if status == "AC" and winner is None:
+                    return winner
+                elif score >= winner_score:
+                    if winner is None:
+                        winner = users[i]
+                        winner_submission_time = submission_id
+                        winner_score = score
+                    elif submission_id < winner_submission_time:
+                        winner = users[i]
+                        winner_submission_time = submission_id
+                        winner_score = score
 
 
 bot.run(api_key)
