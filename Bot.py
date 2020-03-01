@@ -44,11 +44,14 @@ async def on_command_error(ctx, error):
 @bot.command()
 async def help(ctx):
     output_message = discord.Embed(
-        title="Help"
+        title="Help",
+        url="https://github.com/RyanL123/DMOJBot"
     )
     output_message.add_field(name="Stats", value="Gets the stats for the given user", inline=False)
     output_message.add_field(name="Submissions", value="Gets the status of the *nth*\
     most submission from the given user", inline=False)
+    output_message.add_field(name="Rank", value="Get the predicted rating for the user after the specified contest")
+    output_message.add_field(name="More Help", value="For more information, visited my GitHub")
     await ctx.channel.send(embed=output_message)
 
 
@@ -58,9 +61,6 @@ async def stats(ctx, user=None):
     # No user is given
     if user is None:
         await ctx.channel.send(">>> **Parameters** (User)\n**User**: Name of the user on DMOJ")
-        return
-    if user == "Bartpuup" or user == "bartpuup":
-        await ctx.channel.send("Bert got 75% on a grade 11 math test lmaoooooo")
         return
     user_submissions = None
     user_info = None
@@ -106,9 +106,6 @@ async def submissions(ctx, user=None, num=1):
         await ctx.channel.send(">>> **Parameters** (User, Amount)\n" +
                                "**User**: Name of the user on DMOJ\n" +
                                "**Amount: ** Amount of submissions to get")
-        return
-    if user == "Bartpuup" or user == "bartpuup":
-        await ctx.channel.send("Bert got 75% on a grade 11 math test lmaoooooo")
         return
     user_submissions = None
     # Attempts to get user submissions
@@ -183,10 +180,29 @@ async def new_contests():
         previous_keys = current_keys
 
 
+@bot.command()
+async def rank(ctx, contest, user):
+    try:
+        ratings = requests.get(f"https://evanzhang.me/rating/contest/{contest}/api").json()
+    except:
+        await ctx.channel.send("That contest does not exist")
+        return
+    all_contests = requests.get("https://dmoj.ca/api/contest/list").json()
+    embed_rank = discord.Embed(
+        title=all_contests[contest]["name"],
+        colour=discord.Colour.gold(),
+        url=f"https://evanzhang.me/rating/contest/{contest}/api"
+    )
+    embed_rank.add_field(name="User", value=user, inline=False)
+    embed_rank.add_field(name="Old Rating", value=ratings["users"][user]["old_rating"], inline=False)
+    embed_rank.add_field(name="New Rating", value=ratings["users"][user]["new_rating"], inline=False)
+    embed_rank.add_field(name="Rating Change", value=ratings["users"][user]["rating_change"], inline=False)
+    await ctx.channel.send(embed=embed_rank)
+
 # TODO
 # Correctly determine winner based on submission time
 # Generate list rankings: 1st, 2nd, etc
-@bot.command()
+"""@bot.command()
 async def race(ctx, problem, time, *users):
     users_list = " ".join(users)
 
@@ -216,6 +232,6 @@ async def compare_submissions(problem, users):
                         winner = users[i]
                         winner_submission_time = submission_id
                         winner_score = score
-
+"""
 
 bot.run(api_key)
