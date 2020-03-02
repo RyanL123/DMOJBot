@@ -191,7 +191,7 @@ async def rank(ctx, contest, user):
     embed_rank = discord.Embed(
         title=all_contests[contest]["name"],
         colour=discord.Colour.gold(),
-        url=f"https://evanzhang.me/rating/contest/{contest}/api"
+        url=f"https://dmoj.ca/contest/{contest}"
     )
     embed_rank.add_field(name="User", value=user, inline=False)
     embed_rank.add_field(name="Old Rating", value=ratings["users"][user]["old_rating"], inline=False)
